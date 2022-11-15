@@ -2,7 +2,7 @@
 
 ## Federation Report
 
-Copy `federation_report.sh` and `federation_dedup.sh` to `$JSONAR_LOCALDIR/../debug/federation_report.sh` and change file permissions
+Copy `federation_report.sh` and `federation_dedup.sh` to `$JSONAR_LOCALDIR/../debug/` and change file permissions
 ```
 $ . /etc/sysconfig/jsonar
 $ mkdir $JSONAR_LOCALDIR/../debug

@@ -100,6 +100,7 @@ if [ -z "$1" ]; then
   add_to_report "federation_report" "Ssh connection test:\n"
   for remote_host in $remote_hosts
   do
+    echo "   - $remote_host ..."
     ssh_status=$(ssh -q -o BatchMode=yes -o ConnectTimeout=5 $remote_host echo ok 2>&1)
     add_to_report "federation_report" "$remote_host=$ssh_status"
   done
@@ -132,6 +133,8 @@ if [ -z "$1" ]; then
   echo "2 - retrieving outgoing/incoming information for warehouse and remote hosts ..."
   add_to_report "federation_report" "Checking sonargd.conf sftp and retriving outgoing/incoming folder information:\n"
 
+  echo "   - warehouse ..."
+
   outgoing_location="$JSONAR_DATADIR/sonargd/outgoing"
   list_and_count "warehouse" $outgoing_location "outgoing"
 
@@ -140,6 +143,10 @@ if [ -z "$1" ]; then
 
   for remote_host in $remote_hosts
   do
+    echo "   - $remote_host ..."
+
+# TODO if grep fails then it mean federation probably failed, check for that case
+
     grep_sonargd=$(\grep $remote_host $JSONAR_LOCALDIR/sonargd/sonargd.conf| sed 's/ *- *//')
     outgoing_location=$(echo $grep_sonargd | sed 's/.*'$remote_host'//')
     list_and_count $remote_host $outgoing_location "outgoing" "ssh -q $remote_host"
@@ -169,7 +176,7 @@ if [ -z "$1" ]; then
   massage='{"$project":{"_id":1,"root":{"$arrayToObject":{"$sorted":{"$objectToArray":"$$ROOT"}}}}},{"$replaceRoot":{"newRoot":"$root"}}'
 
   for remote_host in $remote_hosts ; do
-    echo "   - from $remote_host ..."
+    echo "   - $remote_host ..."
     sonarw_run "lmrm__sonarg" "db.asset.aggregate({\"\$project\":{\"*\":1,\"__federation_source\":\"$remote_host\"}},$massage,{\"\$out\":{\"db\":\"lmrm__sonarg\",\"name\":\"asset_report\"}})" "ssh -q $remote_host"
     sonarw_export "lmrm__sonarg" "asset_report" "coll_asset/$remote_host.json" "ssh -q $remote_host"
     sonarw_run "lmrm__sonarg" "db.connection.aggregate({\"\$project\":{\"*\":1,\"__federation_source\":\"$remote_host\"}},$massage,{\"\$out\":{\"db\":\"lmrm__sonarg\",\"name\":\"connection_report\"}})" "ssh -q $remote_host"
